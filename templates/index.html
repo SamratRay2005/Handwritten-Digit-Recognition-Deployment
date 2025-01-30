@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handwritten Digit Recognition</title>
+    <link rel="stylesheet" href="../static/css/styles.css"> <!-- Linking the external CSS file -->
+</head>
+
+<body>
+    <div class="container">
+        <br/>
+        <br/>
+        <h1>Handwritten Digit Recognition</h1>
+        <canvas id="canvas" width="28" height="28"></canvas>
+        <div class="buttons">
+            <button onclick="clearCanvas()">Clear</button>
+            <button onclick="predict()">Predict</button>
+            <button onclick="saveImage()">Save Image</button>
+        </div>
+        <h2 id="result">Prediction: </h2>
+        <footer>
+            <p>Made by Samrat Ray</p>
+        </footer>
+    </div>
+
+    <script>
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        function initializeCanvas() {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        initializeCanvas();
+
+        canvas.addEventListener('mousedown', function () { isDrawing = true; });
+        canvas.addEventListener('mouseup', function () {
+            isDrawing = false;
+            ctx.beginPath();
+        });
+        canvas.addEventListener('mousemove', draw);
+
+        function draw(event) {
+            if (!isDrawing) return;
+            ctx.lineWidth = 1;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'black';
+
+            let rect = canvas.getBoundingClientRect();
+            ctx.lineTo(event.clientX - rect.left, event.clientY - rect.top);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(event.clientX - rect.left, event.clientY - rect.top);
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            initializeCanvas();
+            document.getElementById('result').innerText = 'Prediction: ';
+        }
+
+        async function predict() {
+            let dataURL = canvas.toDataURL('image/png');
+            let response = await fetch('/predict', {
+                method: 'POST',
+                body: JSON.stringify({ image: dataURL }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            let result = await response.json();
+            document.getElementById('result').innerText = 'Prediction: ' + result.prediction;
+        }
+
+        function saveImage() {
+            let dataURL = canvas.toDataURL('image/png');
+            let link = document.createElement('a');
+            link.href = dataURL;
+            link.download = 'drawing.png';
+            link.click();
+        }
+    </script>
+</body>
+
+</html>
