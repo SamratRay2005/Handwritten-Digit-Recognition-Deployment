@@ -1,5 +1,5 @@
 Flask==2.1.1
-tensorflow==2.10.0
+tensorflow
 numpy==1.23.5
 opencv-python==4.6.0.66
 Pillow==9.3.0
